@@ -42,6 +42,46 @@ app.get('/health', async (_req: Request, res: Response) => {
   }
 });
 
+// ── Well-known MCP discovery endpoint ──
+// Allows agents and registries to discover this server's capabilities.
+// See: https://spec.modelcontextprotocol.io/specification/2025-03-26/basic/transports/#discovery
+app.get('/.well-known/mcp.json', (_req: Request, res: Response) => {
+  res.json({
+    mcp: {
+      server: {
+        name: 'routewise',
+        version: '0.1.0',
+        description:
+          'Cost-optimised model routing advisor for autonomous agents. ' +
+          'Query to get model recommendations based on task type, budget, and requirements.',
+        url: '/mcp',
+        capabilities: {
+          tools: true,
+        },
+      },
+      tools: [
+        {
+          name: 'recommend_model',
+          description:
+            'Get a cost-optimised model recommendation for a specific task type, complexity, and budget.',
+        },
+        {
+          name: 'compare_models',
+          description: 'Head-to-head comparison of 2-5 models with optional volume cost projections.',
+        },
+        {
+          name: 'get_pricing',
+          description: 'Raw pricing data lookup with filters by model, provider, price, and capabilities.',
+        },
+        {
+          name: 'check_price_changes',
+          description: 'See what model pricing has changed since a given date.',
+        },
+      ],
+    },
+  });
+});
+
 // ── Session management ──
 const transports: Record<string, StreamableHTTPServerTransport> = {};
 
