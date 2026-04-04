@@ -1,0 +1,94 @@
+import * as z from 'zod/v4';
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { getModelsByFilter, getDataFreshness } from '../db/models.js';
+import type { Capability } from '../engine/types.js';
+
+export function registerGetPricing(server: McpServer, supabase: SupabaseClient): void {
+  server.registerTool(
+    'get_pricing',
+    {
+      description:
+        'Raw pricing data lookup for LLM models. Filter by model, provider, ' +
+        'price ceiling, and capabilities. Returns structured pricing data for ' +
+        'programmatic consumption.',
+      inputSchema: {
+        model_id: z.string().optional().describe(
+          'Specific model ID, e.g. "anthropic/claude-sonnet-4"',
+        ),
+        provider: z.string().optional().describe(
+          'Filter to models from this provider, e.g. "anthropic"',
+        ),
+        max_input_price: z.number().positive().optional().describe(
+          'Maximum input price per million tokens in USD',
+        ),
+        capabilities: z.array(
+          z.enum(['tool_calling', 'json_output', 'streaming', 'vision'] as const),
+        ).optional().describe(
+          'Required capabilities to filter by',
+        ),
+        min_context_window: z.number().int().positive().optional().describe(
+          'Minimum context window size in tokens',
+        ),
+        limit: z.number().int().min(1).max(100).default(20).describe(
+          'Maximum number of results to return (1-100, default 20)',
+        ),
+      },
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+      },
+    },
+    async (args) => {
+      try {
+        const models = await getModelsByFilter(supabase, {
+          model_id: args.model_id,
+          provider: args.provider,
+          max_input_price: args.max_input_price,
+          capabilities: args.capabilities as Capability[] | undefined,
+          min_context_window: args.min_context_window,
+          limit: args.limit,
+        });
+
+        const dataFreshness = await getDataFreshness(supabase);
+
+        const result = {
+          models: models.map((m) => ({
+            model_id: m.model_id,
+            provider: m.provider,
+            display_name: m.display_name,
+            input_price_per_mtok: m.pricing_prompt * 1_000_000,
+            output_price_per_mtok: m.pricing_completion * 1_000_000,
+            image_price: m.pricing_image,
+            context_length: m.context_length,
+            max_output_tokens: m.max_output_tokens,
+            capabilities: m.capabilities,
+            quality_tier: m.quality_tier,
+            value_score: m.value_score,
+            last_updated: m.updated_at,
+          })),
+          total_results: models.length,
+          data_freshness: dataFreshness,
+        };
+
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify(result, null, 2),
+          }],
+        };
+      } catch (err) {
+        return {
+          content: [{
+            type: 'text' as const,
+            text: JSON.stringify({
+              error: `Failed to fetch pricing: ${err instanceof Error ? err.message : String(err)}`,
+            }),
+          }],
+          isError: true,
+        };
+      }
+    },
+  );
+}
