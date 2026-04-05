@@ -7,6 +7,12 @@ compatibility_flags = ["nodejs_compat"]
 #   wrangler secret put SUPABASE_URL
 #   wrangler secret put SUPABASE_ANON_KEY
 #   wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+#   wrangler secret put STRIPE_SECRET_KEY
+#   wrangler secret put STRIPE_WEBHOOK_SECRET
+#   wrangler secret put STRIPE_DEVELOPER_PRICE_ID
+#   wrangler secret put STRIPE_TEAM_PRICE_ID
+#   wrangler secret put RESEND_API_KEY           (optional — welcome email)
+#   wrangler secret put APP_BASE_URL             (optional — defaults to https://whichmodel.dev)
 
 # KV namespace for API key cache (sha256(key) → {key_id, plan, monthly_limit, revoked}, 5-min TTL)
 # Create with: wrangler kv namespace create API_KEYS
