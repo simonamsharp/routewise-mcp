@@ -15,6 +15,8 @@ compatibility_flags = ["nodejs_compat"]
 #   wrangler secret put APP_BASE_URL             (optional — defaults to https://whichmodel.dev)
 
 # KV namespace for API key cache (sha256(key) → {key_id, plan, monthly_limit, revoked}, 5-min TTL)
+# Create with: wrangler kv namespace create API_KEYS
+# Then replace __API_KEYS_NAMESPACE_ID__ below with the id printed by that command.
 [[kv_namespaces]]
 binding = "API_KEYS"
 id = "e3a172189e1c4f50af2828011063be98"
