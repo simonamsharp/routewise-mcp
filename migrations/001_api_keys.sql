@@ -6,6 +6,7 @@ create table if not exists api_keys (
   id                    uuid primary key default gen_random_uuid(),
   key_hash              text unique not null,        -- sha256(raw_key)
   key_prefix            text not null,               -- first 12 chars of raw key (for display)
+  email                 text unique,                 -- owner email (optional, set on signup)
   plan                  text not null default 'free',
   monthly_limit         integer not null default 1000,
   created_at            timestamptz default now(),
