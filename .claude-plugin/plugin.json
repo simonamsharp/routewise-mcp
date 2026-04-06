@@ -1,0 +1,39 @@
+{
+  "schema_version": "v1",
+  "name": "whichmodel",
+  "display_name": "WhichModel",
+  "description": "Cost-optimized LLM model recommendations for AI agents. Get real-time pricing across 100+ models and find the cheapest model for any task.",
+  "logo_url": "https://whichmodel.dev/logo.png",
+  "contact_email": "hello@whichmodel.dev",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "url": "https://whichmodel.dev/mcp",
+    "transport": "streamable-http"
+  },
+  "tools": [
+    {
+      "name": "recommend_model",
+      "description": "Get a cost-optimised model recommendation for a specific task type, complexity, and budget."
+    },
+    {
+      "name": "compare_models",
+      "description": "Head-to-head comparison of 2-5 models with optional volume cost projections."
+    },
+    {
+      "name": "get_pricing",
+      "description": "Raw pricing data lookup with filters by model, provider, price, and capabilities."
+    },
+    {
+      "name": "check_price_changes",
+      "description": "See what model pricing has changed since a given date."
+    }
+  ],
+  "categories": ["developer_tools", "ai"],
+  "pricing": {
+    "type": "freemium",
+    "free_tier": "1,000 requests/month",
+    "paid_plans_url": "https://whichmodel.dev/#pricing"
+  }
+}

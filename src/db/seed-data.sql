@@ -1,4 +1,4 @@
--- RouteWise seed data: Top 50+ models with current pricing (April 2026)
+-- WhichModel seed data: Top 50+ models with current pricing (April 2026)
 -- Paste this in the Supabase SQL Editor after running schema.sql
 
 INSERT INTO models (model_id, provider, display_name, description, context_length, max_output_tokens, modality, pricing_prompt, pricing_completion, pricing_image, pricing_request, capabilities, supported_parameters, quality_tier, value_score, is_active)

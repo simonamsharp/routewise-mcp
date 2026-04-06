@@ -1,4 +1,4 @@
--- RouteWise database schema for Supabase (Postgres)
+-- WhichModel database schema for Supabase (Postgres)
 -- Run this in the Supabase SQL Editor to create the tables.
 
 -- ── Models table ──

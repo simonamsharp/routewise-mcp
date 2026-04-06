@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "WhichModel",
+  "name_for_model": "whichmodel",
+  "description_for_human": "Find the cheapest AI model for any task. Real-time pricing across 100+ models from Anthropic, OpenAI, Google, and more.",
+  "description_for_model": "Cost-optimized LLM model recommendation engine. Use this to find the cheapest model that meets task requirements (type, complexity, budget). Tracks real-time pricing across 100+ models, refreshed every 4 hours. Tools: recommend_model (get cheapest model for a task), compare_models (head-to-head with cost projections), get_pricing (raw pricing with filters), check_price_changes (monitor price changes since a date).",
+  "logo_url": "https://whichmodel.dev/logo.png",
+  "contact_email": "hello@whichmodel.dev",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "mcp",
+    "url": "https://whichmodel.dev/mcp",
+    "transport": "streamable-http"
+  }
+}
