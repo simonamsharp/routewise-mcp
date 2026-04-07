@@ -3,8 +3,9 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getPriceChangesSince } from '../db/price-history.js';
 import { getDataFreshness } from '../db/models.js';
+import type { QueryCache } from '../cache.js';
 
-export function registerCheckPriceChanges(server: McpServer, supabase: SupabaseClient): void {
+export function registerCheckPriceChanges(server: McpServer, supabase: SupabaseClient, cache?: QueryCache): void {
   server.registerTool(
     'check_price_changes',
     {
@@ -44,6 +45,14 @@ export function registerCheckPriceChanges(server: McpServer, supabase: SupabaseC
           };
         }
 
+        // Check cache
+        if (cache) {
+          const cached = await cache.get('check_price_changes', args);
+          if (cached) {
+            return { content: [{ type: 'text' as const, text: cached }] };
+          }
+        }
+
         const changes = await getPriceChangesSince(
           supabase,
           args.since,
@@ -60,12 +69,14 @@ export function registerCheckPriceChanges(server: McpServer, supabase: SupabaseC
           data_freshness: dataFreshness,
         };
 
-        return {
-          content: [{
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2),
-          }],
-        };
+        const text = JSON.stringify(result, null, 2);
+
+        // Store in cache
+        if (cache) {
+          await cache.set('check_price_changes', args, text);
+        }
+
+        return { content: [{ type: 'text' as const, text }] };
       } catch (err) {
         return {
           content: [{

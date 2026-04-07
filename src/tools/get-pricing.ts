@@ -3,8 +3,9 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getModelsByFilter, getDataFreshness } from '../db/models.js';
 import type { Capability } from '../engine/types.js';
+import type { QueryCache } from '../cache.js';
 
-export function registerGetPricing(server: McpServer, supabase: SupabaseClient): void {
+export function registerGetPricing(server: McpServer, supabase: SupabaseClient, cache?: QueryCache): void {
   server.registerTool(
     'get_pricing',
     {
@@ -30,6 +31,9 @@ export function registerGetPricing(server: McpServer, supabase: SupabaseClient):
         min_context_window: z.number().int().positive().optional().describe(
           'Minimum context window size in tokens',
         ),
+        include_deprecated: z.boolean().default(false).describe(
+          'Include deprecated and sunset models in results (default false)',
+        ),
         limit: z.number().int().min(1).max(100).default(20).describe(
           'Maximum number of results to return (1-100, default 20)',
         ),
@@ -42,12 +46,21 @@ export function registerGetPricing(server: McpServer, supabase: SupabaseClient):
     },
     async (args) => {
       try {
+        // Check cache
+        if (cache) {
+          const cached = await cache.get('get_pricing', args);
+          if (cached) {
+            return { content: [{ type: 'text' as const, text: cached }] };
+          }
+        }
+
         const models = await getModelsByFilter(supabase, {
           model_id: args.model_id,
           provider: args.provider,
           max_input_price: args.max_input_price,
           capabilities: args.capabilities as Capability[] | undefined,
           min_context_window: args.min_context_window,
+          include_deprecated: args.include_deprecated,
           limit: args.limit,
         });
 
@@ -66,18 +79,22 @@ export function registerGetPricing(server: McpServer, supabase: SupabaseClient):
             capabilities: m.capabilities,
             quality_tier: m.quality_tier,
             value_score: m.value_score,
+            availability_status: m.availability_status,
+            deprecated_at: m.deprecated_at,
             last_updated: m.updated_at,
           })),
           total_results: models.length,
           data_freshness: dataFreshness,
         };
 
-        return {
-          content: [{
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2),
-          }],
-        };
+        const text = JSON.stringify(result, null, 2);
+
+        // Store in cache
+        if (cache) {
+          await cache.set('get_pricing', args, text);
+        }
+
+        return { content: [{ type: 'text' as const, text }] };
       } catch (err) {
         return {
           content: [{

@@ -4,8 +4,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getAllActiveModels, getDataFreshness } from '../db/models.js';
 import { recommend } from '../engine/recommendation.js';
 import { TASK_TYPES, COMPLEXITY_LEVELS } from '../engine/types.js';
+import type { QueryCache } from '../cache.js';
 
-export function registerRecommendModel(server: McpServer, supabase: SupabaseClient): void {
+export function registerRecommendModel(server: McpServer, supabase: SupabaseClient, cache?: QueryCache): void {
   server.registerTool(
     'recommend_model',
     {
@@ -52,6 +53,14 @@ export function registerRecommendModel(server: McpServer, supabase: SupabaseClie
     },
     async (args) => {
       try {
+        // Check cache
+        if (cache) {
+          const cached = await cache.get('recommend_model', args);
+          if (cached) {
+            return { content: [{ type: 'text' as const, text: cached }] };
+          }
+        }
+
         const models = await getAllActiveModels(supabase);
 
         if (models.length === 0) {
@@ -76,12 +85,14 @@ export function registerRecommendModel(server: McpServer, supabase: SupabaseClie
           requirements: args.requirements,
         }, dataFreshness);
 
-        return {
-          content: [{
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2),
-          }],
-        };
+        const text = JSON.stringify(result, null, 2);
+
+        // Store in cache
+        if (cache) {
+          await cache.set('recommend_model', args, text);
+        }
+
+        return { content: [{ type: 'text' as const, text }] };
       } catch (err) {
         return {
           content: [{

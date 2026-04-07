@@ -4,6 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getModelsByFilter, getDataFreshness } from '../db/models.js';
 import type { Capability, QualityTier } from '../engine/types.js';
 import { QUALITY_TIER_SCORES } from '../engine/types.js';
+import type { QueryCache } from '../cache.js';
 
 /**
  * Map the user-facing quality_floor labels to the minimum QualityTier.
@@ -16,7 +17,7 @@ const QUALITY_FLOOR_MAP: Record<string, QualityTier> = {
   frontier: 'frontier',
 };
 
-export function registerFindCheapestCapable(server: McpServer, supabase: SupabaseClient): void {
+export function registerFindCheapestCapable(server: McpServer, supabase: SupabaseClient, cache?: QueryCache): void {
   server.registerTool(
     'find_cheapest_capable',
     {
@@ -45,6 +46,14 @@ export function registerFindCheapestCapable(server: McpServer, supabase: Supabas
     },
     async (args) => {
       try {
+        // Check cache
+        if (cache) {
+          const cached = await cache.get('find_cheapest_capable', args);
+          if (cached) {
+            return { content: [{ type: 'text' as const, text: cached }] };
+          }
+        }
+
         const candidates = await getModelsByFilter(supabase, {
           capabilities: args.required_capabilities as Capability[],
           min_context_window: args.min_context_window,
@@ -93,12 +102,14 @@ export function registerFindCheapestCapable(server: McpServer, supabase: Supabas
           data_freshness: dataFreshness,
         };
 
-        return {
-          content: [{
-            type: 'text' as const,
-            text: JSON.stringify(response, null, 2),
-          }],
-        };
+        const text = JSON.stringify(response, null, 2);
+
+        // Store in cache
+        if (cache) {
+          await cache.set('find_cheapest_capable', args, text);
+        }
+
+        return { content: [{ type: 'text' as const, text }] };
       } catch (err) {
         return {
           content: [{

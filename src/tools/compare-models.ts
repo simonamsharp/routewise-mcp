@@ -2,9 +2,11 @@ import * as z from 'zod/v4';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getModelsByIds, getDataFreshness } from '../db/models.js';
+import { getBenchmarksForModels, buildBenchmarkSummary } from '../db/benchmarks.js';
 import type { ModelComparison } from '../engine/types.js';
+import type { QueryCache } from '../cache.js';
 
-export function registerCompareModels(server: McpServer, supabase: SupabaseClient): void {
+export function registerCompareModels(server: McpServer, supabase: SupabaseClient, cache?: QueryCache): void {
   server.registerTool(
     'compare_models',
     {
@@ -35,8 +37,19 @@ export function registerCompareModels(server: McpServer, supabase: SupabaseClien
     },
     async (args) => {
       try {
+        // Check cache
+        if (cache) {
+          const cached = await cache.get('compare_models', args);
+          if (cached) {
+            return { content: [{ type: 'text' as const, text: cached }] };
+          }
+        }
+
         const models = await getModelsByIds(supabase, args.models);
         const dataFreshness = await getDataFreshness(supabase);
+
+        // Fetch benchmark data for all requested models
+        const benchmarkMap = await getBenchmarksForModels(supabase, args.models);
 
         // Check for models not found
         const foundIds = new Set(models.map((m) => m.model_id));
@@ -54,6 +67,9 @@ export function registerCompareModels(server: McpServer, supabase: SupabaseClien
             monthlyCost = Math.round(dailyCost * 30 * 1_000_000) / 1_000_000;
           }
 
+          const entries = benchmarkMap.get(m.model_id);
+          const benchmarks = entries?.length ? buildBenchmarkSummary(entries) : undefined;
+
           return {
             model_id: m.model_id,
             provider: m.provider,
@@ -65,7 +81,9 @@ export function registerCompareModels(server: McpServer, supabase: SupabaseClien
             context_length: m.context_length,
             capabilities: m.capabilities,
             quality_tier: m.quality_tier,
+            quality_confidence: m.quality_confidence,
             value_score: m.value_score,
+            benchmarks,
           };
         });
 
@@ -99,12 +117,14 @@ export function registerCompareModels(server: McpServer, supabase: SupabaseClien
           data_freshness: dataFreshness,
         };
 
-        return {
-          content: [{
-            type: 'text' as const,
-            text: JSON.stringify(result, null, 2),
-          }],
-        };
+        const text = JSON.stringify(result, null, 2);
+
+        // Store in cache
+        if (cache) {
+          await cache.set('compare_models', args, text);
+        }
+
+        return { content: [{ type: 'text' as const, text }] };
       } catch (err) {
         return {
           content: [{
