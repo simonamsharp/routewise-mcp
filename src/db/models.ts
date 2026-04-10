@@ -21,8 +21,12 @@ function parseRow(row: Record<string, unknown>): Model {
     capabilities: row.capabilities as ModelCapabilities,
     supported_parameters: (row.supported_parameters as string[]) ?? [],
     quality_tier: row.quality_tier as Model['quality_tier'],
+    quality_confidence: (row.quality_confidence as Model['quality_confidence']) ?? null,
     value_score: (row.value_score as number) ?? null,
     is_active: row.is_active as boolean,
+    availability_status: (row.availability_status as Model['availability_status']) ?? 'active',
+    deprecated_at: (row.deprecated_at as string) ?? null,
+    consecutive_missing_runs: (row.consecutive_missing_runs as number) ?? 0,
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
   };
@@ -122,6 +126,75 @@ export async function upsertModel(
     );
 
   if (error) throw new Error(`Failed to upsert model ${model.model_id}: ${error.message}`);
+}
+
+/**
+ * Get all models including deprecated ones (for pipeline use).
+ */
+export async function getAllModelsForPipeline(supabase: SupabaseClient): Promise<Model[]> {
+  const { data, error } = await supabase
+    .from('models')
+    .select('*')
+    .order('model_id', { ascending: true });
+
+  if (error) throw new Error(`Failed to fetch models for pipeline: ${error.message}`);
+  return (data ?? []).map(parseRow);
+}
+
+/**
+ * Increment the consecutive_missing_runs counter for a model.
+ * Returns 'deprecated' if the threshold was reached, 'incremented' otherwise.
+ */
+export async function incrementMissingRuns(
+  supabase: SupabaseClient,
+  modelId: string,
+  currentMissingRuns: number,
+  threshold: number,
+): Promise<'deprecated' | 'incremented'> {
+  const newCount = currentMissingRuns + 1;
+
+  if (newCount >= threshold) {
+    const { error } = await supabase
+      .from('models')
+      .update({
+        consecutive_missing_runs: newCount,
+        availability_status: 'deprecated',
+        deprecated_at: new Date().toISOString(),
+        is_active: false,
+      })
+      .eq('model_id', modelId);
+
+    if (error) throw new Error(`Failed to deprecate model ${modelId}: ${error.message}`);
+    return 'deprecated';
+  }
+
+  const { error } = await supabase
+    .from('models')
+    .update({ consecutive_missing_runs: newCount })
+    .eq('model_id', modelId);
+
+  if (error) throw new Error(`Failed to increment missing runs for ${modelId}: ${error.message}`);
+  return 'incremented';
+}
+
+/**
+ * Reset missing runs counter and reactivate a model.
+ */
+export async function resetMissingRuns(
+  supabase: SupabaseClient,
+  modelId: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from('models')
+    .update({
+      consecutive_missing_runs: 0,
+      availability_status: 'active',
+      deprecated_at: null,
+      is_active: true,
+    })
+    .eq('model_id', modelId);
+
+  if (error) throw new Error(`Failed to reset missing runs for ${modelId}: ${error.message}`);
 }
 
 export async function getDataFreshness(supabase: SupabaseClient): Promise<string> {

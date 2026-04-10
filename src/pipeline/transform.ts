@@ -38,8 +38,12 @@ export function transformOpenRouterModel(raw: OpenRouterModel): Model {
     capabilities,
     supported_parameters: params,
     quality_tier: qualityTier,
+    quality_confidence: 'provisional',
     value_score: null, // computed later by the engine
     is_active: true,
+    availability_status: 'active',
+    deprecated_at: null,
+    consecutive_missing_runs: 0,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };

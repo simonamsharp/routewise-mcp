@@ -85,7 +85,7 @@ async function sendWelcomeEmail(
 export async function handleSignup(request: Request, env: SignupEnv): Promise<Response> {
   let body: { email?: string };
   try {
-    body = await request.json();
+    body = await request.json() as { email?: string };
   } catch {
     return Response.json({ error: 'Request body must be JSON.' }, { status: 400 });
   }

@@ -147,7 +147,7 @@ export async function handleCreateCheckout(request: Request, env: BillingEnv): P
 
   let body: { plan?: string; success_url?: string; cancel_url?: string };
   try {
-    body = await request.json();
+    body = await request.json() as { plan?: string; success_url?: string; cancel_url?: string };
   } catch {
     return Response.json({ error: 'Request body must be JSON.' }, { status: 400 });
   }

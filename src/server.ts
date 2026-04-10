@@ -7,6 +7,7 @@ import { registerCheckPriceChanges } from './tools/check-price-changes.js';
 import { registerEstimateCost } from './tools/estimate-cost.js';
 import { registerFindCheapestCapable } from './tools/find-cheapest-capable.js';
 import type { QueryCache } from './cache.js';
+import type { ToolTracker } from './observability.js';
 
 /**
  * Create a new McpServer instance with all tools registered.
@@ -15,10 +16,10 @@ import type { QueryCache } from './cache.js';
  * When a QueryCache is provided, tool responses are cached in Cloudflare KV
  * with TTLs appropriate to each tool category.
  */
-export function createWhichModelServer(supabase: SupabaseClient, cache?: QueryCache): McpServer {
+export function createWhichModelServer(supabase: SupabaseClient, cache?: QueryCache, _tracker?: ToolTracker): McpServer {
   const server = new McpServer({
     name: 'whichmodel',
-    version: '0.1.0',
+    version: '1.1.0',
   });
 
   registerRecommendModel(server, supabase, cache);

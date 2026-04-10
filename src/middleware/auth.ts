@@ -130,10 +130,9 @@ export async function authMiddleware(request: Request, env: AuthEnv): Promise<Re
   }
 
   // Async usage increment — atomic via Postgres function, non-blocking
-  supabase
-    .rpc('increment_usage', { p_key_id: kvData.key_id, p_month: month })
-    .then(() => {})
-    .catch(err => console.error('[auth] usage increment failed:', err));
+  Promise.resolve(
+    supabase.rpc('increment_usage', { p_key_id: kvData.key_id, p_month: month }),
+  ).catch((err: unknown) => console.error('[auth] usage increment failed:', err));
 
   return null;
 }

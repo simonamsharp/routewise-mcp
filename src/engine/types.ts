@@ -58,8 +58,12 @@ export interface Model {
   capabilities: ModelCapabilities;
   supported_parameters: string[];
   quality_tier: QualityTier;
+  quality_confidence: 'verified' | 'provisional' | null;
   value_score: number | null;
   is_active: boolean;
+  availability_status: 'active' | 'deprecated' | 'sunset';
+  deprecated_at: string | null;
+  consecutive_missing_runs: number;
   created_at: string;
   updated_at: string;
 }
@@ -136,6 +140,7 @@ export interface ModelComparison {
   context_length: number;
   capabilities: ModelCapabilities;
   quality_tier: QualityTier;
+  quality_confidence: 'verified' | 'provisional' | null;
   value_score: number | null;
 }
 
@@ -157,6 +162,7 @@ export interface PricingFilter {
   max_input_price?: number;
   capabilities?: Capability[];
   min_context_window?: number;
+  include_deprecated?: boolean;
   limit?: number;
 }
 

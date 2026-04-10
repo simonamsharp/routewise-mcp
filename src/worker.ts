@@ -218,7 +218,7 @@ export default {
         return Response.json(
           {
             status: 'ok',
-            version: '0.1.0',
+            version: '1.1.0',
             runtime: 'cloudflare-workers',
             data_freshness: freshness,
           },
@@ -239,7 +239,7 @@ export default {
           mcp: {
             server: {
               name: 'whichmodel',
-              version: '0.1.0',
+              version: '1.1.0',
               description:
                 'Cost-optimised model routing advisor for autonomous agents. ' +
                 'Query to get model recommendations based on task type, budget, and requirements.',

@@ -1,6 +1,6 @@
 {
   "name": "whichmodel-mcp",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "description": "MCP server that provides cost-optimised model recommendations for autonomous agents",
   "license": "MIT",
   "type": "module",
@@ -28,6 +28,7 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260410.1",
     "@types/express": "^5.0.2",
     "@types/node": "^22.15.0",
     "tsx": "^4.19.0",
