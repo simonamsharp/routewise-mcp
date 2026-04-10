@@ -4,6 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getModelById, getModelsByFilter, getDataFreshness } from '../db/models.js';
 import type { Model, Capability } from '../engine/types.js';
 import type { QueryCache } from '../cache.js';
+import type { ToolTracker } from '../observability.js';
 
 /**
  * Find the cheapest active model that has at least the same capabilities
@@ -34,7 +35,7 @@ async function findCheapestAlternative(
   return alternatives[0] ?? null;
 }
 
-export function registerEstimateCost(server: McpServer, supabase: SupabaseClient, cache?: QueryCache): void {
+export function registerEstimateCost(server: McpServer, supabase: SupabaseClient, cache?: QueryCache, tracker?: ToolTracker): void {
   server.registerTool(
     'estimate_cost',
     {
@@ -63,11 +64,15 @@ export function registerEstimateCost(server: McpServer, supabase: SupabaseClient
       },
     },
     async (args) => {
+      const startMs = Date.now();
+      let cacheHit = false;
+      let isError = false;
       try {
         // Check cache
         if (cache) {
           const cached = await cache.get('estimate_cost', args);
           if (cached) {
+            cacheHit = true;
             return { content: [{ type: 'text' as const, text: cached }] };
           }
         }
@@ -75,6 +80,7 @@ export function registerEstimateCost(server: McpServer, supabase: SupabaseClient
         const model = await getModelById(supabase, args.model_id);
 
         if (!model) {
+          isError = true;
           return {
             content: [{
               type: 'text' as const,
@@ -161,6 +167,7 @@ export function registerEstimateCost(server: McpServer, supabase: SupabaseClient
 
         return { content: [{ type: 'text' as const, text }] };
       } catch (err) {
+        isError = true;
         return {
           content: [{
             type: 'text' as const,
@@ -170,6 +177,12 @@ export function registerEstimateCost(server: McpServer, supabase: SupabaseClient
           }],
           isError: true,
         };
+      } finally {
+        tracker?.record('estimate_cost', {
+          latency_ms: Date.now() - startMs,
+          error: isError,
+          cache_hit: cacheHit,
+        }).catch(() => {});
       }
     },
   );

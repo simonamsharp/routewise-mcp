@@ -16,18 +16,18 @@ import type { ToolTracker } from './observability.js';
  * When a QueryCache is provided, tool responses are cached in Cloudflare KV
  * with TTLs appropriate to each tool category.
  */
-export function createWhichModelServer(supabase: SupabaseClient, cache?: QueryCache, _tracker?: ToolTracker): McpServer {
+export function createWhichModelServer(supabase: SupabaseClient, cache?: QueryCache, tracker?: ToolTracker): McpServer {
   const server = new McpServer({
     name: 'whichmodel',
     version: '1.1.1',
   });
 
-  registerRecommendModel(server, supabase, cache);
-  registerCompareModels(server, supabase, cache);
-  registerGetPricing(server, supabase, cache);
-  registerCheckPriceChanges(server, supabase, cache);
-  registerEstimateCost(server, supabase, cache);
-  registerFindCheapestCapable(server, supabase, cache);
+  registerRecommendModel(server, supabase, cache, tracker);
+  registerCompareModels(server, supabase, cache, tracker);
+  registerGetPricing(server, supabase, cache, tracker);
+  registerCheckPriceChanges(server, supabase, cache, tracker);
+  registerEstimateCost(server, supabase, cache, tracker);
+  registerFindCheapestCapable(server, supabase, cache, tracker);
 
   return server;
 }

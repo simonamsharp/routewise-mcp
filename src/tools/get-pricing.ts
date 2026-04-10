@@ -4,8 +4,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getModelsByFilter, getDataFreshness } from '../db/models.js';
 import type { Capability } from '../engine/types.js';
 import type { QueryCache } from '../cache.js';
+import type { ToolTracker } from '../observability.js';
 
-export function registerGetPricing(server: McpServer, supabase: SupabaseClient, cache?: QueryCache): void {
+export function registerGetPricing(server: McpServer, supabase: SupabaseClient, cache?: QueryCache, tracker?: ToolTracker): void {
   server.registerTool(
     'get_pricing',
     {
@@ -45,11 +46,15 @@ export function registerGetPricing(server: McpServer, supabase: SupabaseClient, 
       },
     },
     async (args) => {
+      const startMs = Date.now();
+      let cacheHit = false;
+      let isError = false;
       try {
         // Check cache
         if (cache) {
           const cached = await cache.get('get_pricing', args);
           if (cached) {
+            cacheHit = true;
             return { content: [{ type: 'text' as const, text: cached }] };
           }
         }
@@ -96,6 +101,7 @@ export function registerGetPricing(server: McpServer, supabase: SupabaseClient, 
 
         return { content: [{ type: 'text' as const, text }] };
       } catch (err) {
+        isError = true;
         return {
           content: [{
             type: 'text' as const,
@@ -105,6 +111,12 @@ export function registerGetPricing(server: McpServer, supabase: SupabaseClient, 
           }],
           isError: true,
         };
+      } finally {
+        tracker?.record('get_pricing', {
+          latency_ms: Date.now() - startMs,
+          error: isError,
+          cache_hit: cacheHit,
+        }).catch(() => {});
       }
     },
   );

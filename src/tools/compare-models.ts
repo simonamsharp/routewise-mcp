@@ -5,8 +5,9 @@ import { getModelsByIds, getDataFreshness } from '../db/models.js';
 import { getBenchmarksForModels, buildBenchmarkSummary } from '../db/benchmarks.js';
 import type { ModelComparison } from '../engine/types.js';
 import type { QueryCache } from '../cache.js';
+import type { ToolTracker } from '../observability.js';
 
-export function registerCompareModels(server: McpServer, supabase: SupabaseClient, cache?: QueryCache): void {
+export function registerCompareModels(server: McpServer, supabase: SupabaseClient, cache?: QueryCache, tracker?: ToolTracker): void {
   server.registerTool(
     'compare_models',
     {
@@ -36,11 +37,15 @@ export function registerCompareModels(server: McpServer, supabase: SupabaseClien
       },
     },
     async (args) => {
+      const startMs = Date.now();
+      let cacheHit = false;
+      let isError = false;
       try {
         // Check cache
         if (cache) {
           const cached = await cache.get('compare_models', args);
           if (cached) {
+            cacheHit = true;
             return { content: [{ type: 'text' as const, text: cached }] };
           }
         }
@@ -126,6 +131,7 @@ export function registerCompareModels(server: McpServer, supabase: SupabaseClien
 
         return { content: [{ type: 'text' as const, text }] };
       } catch (err) {
+        isError = true;
         return {
           content: [{
             type: 'text' as const,
@@ -135,6 +141,12 @@ export function registerCompareModels(server: McpServer, supabase: SupabaseClien
           }],
           isError: true,
         };
+      } finally {
+        tracker?.record('compare_models', {
+          latency_ms: Date.now() - startMs,
+          error: isError,
+          cache_hit: cacheHit,
+        }).catch(() => {});
       }
     },
   );

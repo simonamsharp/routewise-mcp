@@ -5,6 +5,7 @@ import { getModelsByFilter, getDataFreshness } from '../db/models.js';
 import type { Capability, QualityTier } from '../engine/types.js';
 import { QUALITY_TIER_SCORES } from '../engine/types.js';
 import type { QueryCache } from '../cache.js';
+import type { ToolTracker } from '../observability.js';
 
 /**
  * Map the user-facing quality_floor labels to the minimum QualityTier.
@@ -17,7 +18,7 @@ const QUALITY_FLOOR_MAP: Record<string, QualityTier> = {
   frontier: 'frontier',
 };
 
-export function registerFindCheapestCapable(server: McpServer, supabase: SupabaseClient, cache?: QueryCache): void {
+export function registerFindCheapestCapable(server: McpServer, supabase: SupabaseClient, cache?: QueryCache, tracker?: ToolTracker): void {
   server.registerTool(
     'find_cheapest_capable',
     {
@@ -45,11 +46,15 @@ export function registerFindCheapestCapable(server: McpServer, supabase: Supabas
       },
     },
     async (args) => {
+      const startMs = Date.now();
+      let cacheHit = false;
+      let isError = false;
       try {
         // Check cache
         if (cache) {
           const cached = await cache.get('find_cheapest_capable', args);
           if (cached) {
+            cacheHit = true;
             return { content: [{ type: 'text' as const, text: cached }] };
           }
         }
@@ -111,6 +116,7 @@ export function registerFindCheapestCapable(server: McpServer, supabase: Supabas
 
         return { content: [{ type: 'text' as const, text }] };
       } catch (err) {
+        isError = true;
         return {
           content: [{
             type: 'text' as const,
@@ -120,6 +126,12 @@ export function registerFindCheapestCapable(server: McpServer, supabase: Supabas
           }],
           isError: true,
         };
+      } finally {
+        tracker?.record('find_cheapest_capable', {
+          latency_ms: Date.now() - startMs,
+          error: isError,
+          cache_hit: cacheHit,
+        }).catch(() => {});
       }
     },
   );

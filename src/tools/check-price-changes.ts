@@ -4,8 +4,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getPriceChangesSince } from '../db/price-history.js';
 import { getDataFreshness } from '../db/models.js';
 import type { QueryCache } from '../cache.js';
+import type { ToolTracker } from '../observability.js';
 
-export function registerCheckPriceChanges(server: McpServer, supabase: SupabaseClient, cache?: QueryCache): void {
+export function registerCheckPriceChanges(server: McpServer, supabase: SupabaseClient, cache?: QueryCache, tracker?: ToolTracker): void {
   server.registerTool(
     'check_price_changes',
     {
@@ -30,10 +31,14 @@ export function registerCheckPriceChanges(server: McpServer, supabase: SupabaseC
       },
     },
     async (args) => {
+      const startMs = Date.now();
+      let cacheHit = false;
+      let isError = false;
       try {
         // Validate date format
         const dateRegex = /^\d{4}-\d{2}-\d{2}/;
         if (!dateRegex.test(args.since)) {
+          isError = true;
           return {
             content: [{
               type: 'text' as const,
@@ -49,6 +54,7 @@ export function registerCheckPriceChanges(server: McpServer, supabase: SupabaseC
         if (cache) {
           const cached = await cache.get('check_price_changes', args);
           if (cached) {
+            cacheHit = true;
             return { content: [{ type: 'text' as const, text: cached }] };
           }
         }
@@ -78,6 +84,7 @@ export function registerCheckPriceChanges(server: McpServer, supabase: SupabaseC
 
         return { content: [{ type: 'text' as const, text }] };
       } catch (err) {
+        isError = true;
         return {
           content: [{
             type: 'text' as const,
@@ -87,6 +94,12 @@ export function registerCheckPriceChanges(server: McpServer, supabase: SupabaseC
           }],
           isError: true,
         };
+      } finally {
+        tracker?.record('check_price_changes', {
+          latency_ms: Date.now() - startMs,
+          error: isError,
+          cache_hit: cacheHit,
+        }).catch(() => {});
       }
     },
   );

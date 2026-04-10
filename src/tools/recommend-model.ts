@@ -5,8 +5,9 @@ import { getAllActiveModels, getDataFreshness } from '../db/models.js';
 import { recommend } from '../engine/recommendation.js';
 import { TASK_TYPES, COMPLEXITY_LEVELS } from '../engine/types.js';
 import type { QueryCache } from '../cache.js';
+import type { ToolTracker } from '../observability.js';
 
-export function registerRecommendModel(server: McpServer, supabase: SupabaseClient, cache?: QueryCache): void {
+export function registerRecommendModel(server: McpServer, supabase: SupabaseClient, cache?: QueryCache, tracker?: ToolTracker): void {
   server.registerTool(
     'recommend_model',
     {
@@ -52,11 +53,15 @@ export function registerRecommendModel(server: McpServer, supabase: SupabaseClie
       },
     },
     async (args) => {
+      const startMs = Date.now();
+      let cacheHit = false;
+      let isError = false;
       try {
         // Check cache
         if (cache) {
           const cached = await cache.get('recommend_model', args);
           if (cached) {
+            cacheHit = true;
             return { content: [{ type: 'text' as const, text: cached }] };
           }
         }
@@ -94,6 +99,7 @@ export function registerRecommendModel(server: McpServer, supabase: SupabaseClie
 
         return { content: [{ type: 'text' as const, text }] };
       } catch (err) {
+        isError = true;
         return {
           content: [{
             type: 'text' as const,
@@ -103,6 +109,12 @@ export function registerRecommendModel(server: McpServer, supabase: SupabaseClie
           }],
           isError: true,
         };
+      } finally {
+        tracker?.record('recommend_model', {
+          latency_ms: Date.now() - startMs,
+          error: isError,
+          cache_hit: cacheHit,
+        }).catch(() => {});
       }
     },
   );
