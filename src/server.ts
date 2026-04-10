@@ -19,7 +19,7 @@ import type { ToolTracker } from './observability.js';
 export function createWhichModelServer(supabase: SupabaseClient, cache?: QueryCache, _tracker?: ToolTracker): McpServer {
   const server = new McpServer({
     name: 'whichmodel',
-    version: '1.1.0',
+    version: '1.1.1',
   });
 
   registerRecommendModel(server, supabase, cache);
