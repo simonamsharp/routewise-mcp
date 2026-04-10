@@ -4,15 +4,25 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { getSupabaseClient } from './db/client.js';
 import { getDataFreshness } from './db/models.js';
-import { createWhichModelServer } from './server.js';
+import { createWhichModelServer, createSandboxServer } from './server.js';
 import { createRateLimiter } from './middleware/rate-limit.js';
 import type { Request, Response } from 'express';
+
+// Re-export for Smithery capability scanning (no credentials required).
+// See: https://smithery.ai/docs/deploy#sandbox-server
+export { createSandboxServer };
 
 const PORT = parseInt(process.env['PORT'] ?? '3000', 10);
 const HOST = process.env['HOST'] ?? '0.0.0.0';
 
-// ── Supabase client (shared across all sessions) ──
-const supabase = getSupabaseClient();
+// ── Supabase client (lazy — deferred until first use so this module can be
+//    imported without SUPABASE_URL/SUPABASE_ANON_KEY being set, e.g. by
+//    Smithery's capability scanner calling createSandboxServer) ──
+let _supabase: ReturnType<typeof getSupabaseClient> | null = null;
+function getSupabase() {
+  if (!_supabase) _supabase = getSupabaseClient();
+  return _supabase;
+}
 
 // ── Express app ──
 const app = createMcpExpressApp({ host: HOST });
@@ -27,7 +37,7 @@ app.use('/mcp', rateLimiter);
 // ── Health endpoint ──
 app.get('/health', async (_req: Request, res: Response) => {
   try {
-    const freshness = await getDataFreshness(supabase);
+    const freshness = await getDataFreshness(getSupabase());
     res.json({
       status: 'ok',
       version: '0.1.0',
@@ -112,7 +122,7 @@ app.post('/mcp', async (req: Request, res: Response) => {
       };
 
       // Create a fresh server for this session and connect
-      const server = createWhichModelServer(supabase);
+      const server = createWhichModelServer(getSupabase());
       await server.connect(transport);
       await transport.handleRequest(req, res, req.body);
       return;

@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerRecommendModel } from './tools/recommend-model.js';
 import { registerCompareModels } from './tools/compare-models.js';
@@ -30,4 +30,19 @@ export function createWhichModelServer(supabase: SupabaseClient, cache?: QueryCa
   registerFindCheapestCapable(server, supabase, cache);
 
   return server;
+}
+
+/**
+ * Creates a WhichModel MCP server with a mock Supabase client for Smithery
+ * capability scanning. No real credentials are required — tools are registered
+ * with their full schemas but won't make live database calls.
+ *
+ * See: https://smithery.ai/docs/deploy#sandbox-server
+ */
+export function createSandboxServer(): McpServer {
+  const mockSupabase = createClient(
+    'https://placeholder.supabase.co',
+    'placeholder-anon-key',
+  );
+  return createWhichModelServer(mockSupabase);
 }
