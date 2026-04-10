@@ -1,0 +1,69 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "whichmodel-haystack"
+dynamic = ["version"]
+description = "Haystack integration for WhichModel — cost-aware LLM model selection"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+keywords = ["haystack", "whichmodel", "llm", "model-selection", "cost-optimization", "mcp"]
+authors = [
+    {name = "WhichModel", email = "hello@whichmodel.dev"},
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "haystack-ai>=2.19.0",
+    "httpx>=0.27.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio",
+    "pytest-cov",
+    "ruff>=0.4.0",
+    "mypy>=1.10",
+]
+
+[project.urls]
+Homepage = "https://whichmodel.dev"
+Repository = "https://github.com/Which-Model/whichmodel-mcp"
+Documentation = "https://github.com/Which-Model/whichmodel-mcp/tree/main/integrations/haystack-whichmodel"
+
+[tool.hatch.version]
+source = "vcs"
+tag-pattern = "integrations/haystack-whichmodel-v(?P<version>.*)"
+fallback-version = "0.1.0"
+
+[tool.hatch.build.targets.sdist]
+include = ["src/haystack_integrations"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/haystack_integrations"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+
+[tool.mypy]
+strict = true
+warn_return_any = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
