@@ -12,9 +12,13 @@ export function registerRecommendModel(server: McpServer, supabase: SupabaseClie
     'recommend_model',
     {
       description:
-        'Get a cost-optimised model recommendation for a specific task. ' +
-        'Describe what you need to do and get back the best model with cost estimate, ' +
-        'reasoning, and alternatives.',
+        'Get the single best-fit LLM for a task, with pricing and reasoning. ' +
+        'Provide a task type and complexity; optionally add token estimates, a per-call budget cap, ' +
+        'and capability requirements (tool calling, JSON output, streaming, context window, provider). ' +
+        'Returns the recommended model, its cost estimate, a reasoning summary, and ranked alternatives. ' +
+        'Use this when you need to select a model without knowing which to pick. ' +
+        'Do not use for raw price lookups (use get_pricing) or for comparing specific known models (use compare_models). ' +
+        'Data is refreshed automatically from OpenRouter; check data_freshness in the response for the last-updated timestamp.',
       inputSchema: {
         task_type: z.enum(TASK_TYPES).describe(
           'The type of task you need a model for',

@@ -4,6 +4,7 @@
   "description": "Cost-optimised model routing advisor for autonomous agents. Query real-time pricing and capabilities across 100+ LLM models to get recommendations based on task type, budget, and requirements.",
   "repository": "https://github.com/Which-Model/whichmodel-mcp",
   "homepage": "https://whichmodel.dev",
+  "license": "MIT",
   "maintainers": [
     "simonamsharp",
     "Which-Model"
@@ -15,19 +16,19 @@
   "tools": [
     {
       "name": "recommend_model",
-      "description": "Get a cost-optimised model recommendation for a specific task type, complexity, and budget."
+      "description": "Get the single best-fit LLM for a task, with pricing and reasoning. Provide a task type and complexity; optionally add token estimates, a per-call budget cap, and capability requirements (tool calling, JSON output, streaming, context window, provider). Returns the recommended model, its cost estimate, a reasoning summary, and ranked alternatives. Use this when you need to select a model without knowing which to pick. Do not use for raw price lookups (use get_pricing) or for comparing specific known models (use compare_models). Data is refreshed automatically from OpenRouter; check data_freshness in the response for the last-updated timestamp."
     },
     {
       "name": "compare_models",
-      "description": "Head-to-head comparison of 2-5 models with optional volume cost projections."
+      "description": "Side-by-side comparison of 2–5 specific LLMs by pricing, quality tier, capabilities, and projected costs. Supply model IDs (e.g. \"anthropic/claude-sonnet-4\", \"openai/gpt-4.1\"); add an optional volume object to see daily and monthly cost estimates based on expected call volume and token sizes. Returns models sorted by value score, with a plain-English recommendation highlighting best value, cheapest, and highest-quality options. Unknown model IDs are reported in not_found without raising an error. Use when you already have specific candidates and want a structured diff. Do not use for open-ended model discovery — use recommend_model instead."
     },
     {
       "name": "get_pricing",
-      "description": "Raw pricing data lookup with filters by model, provider, price ceiling, and capabilities."
+      "description": "Returns raw pricing and capability data for LLM models matching the supplied filters. Filters can be combined: specific model ID, provider name, maximum input price per million tokens, required capabilities (tool_calling, json_output, streaming, vision), and minimum context window. Results are ordered by value score; default limit is 20 (max 100). Each result includes input/output prices per MTok, context length, max output tokens, capabilities, quality tier, and value score. Use for programmatic price checks, budget validation, or building custom selection logic. Does not make recommendations — use recommend_model for that."
     },
     {
       "name": "check_price_changes",
-      "description": "See what model pricing has changed since a given date."
+      "description": "Returns all LLM pricing changes recorded since a given date, optionally filtered to a specific model or provider. Each change record includes the old price, new price, model ID, and change timestamp. The since parameter accepts ISO date format (YYYY-MM-DD or full ISO timestamp, e.g. \"2026-04-01\"). Returns an empty changes array when no changes are found in the period. Use to monitor cost drift, detect newly added or deprecated models, or build price-change alerts. Check total_changes in the response to distinguish empty results from errors."
     }
   ]
 }

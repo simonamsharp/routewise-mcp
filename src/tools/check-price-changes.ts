@@ -11,8 +11,12 @@ export function registerCheckPriceChanges(server: McpServer, supabase: SupabaseC
     'check_price_changes',
     {
       description:
-        'Check what model pricing has changed since a given date. ' +
-        'Useful for monitoring cost changes and spotting new models or deprecations.',
+        'Returns all LLM pricing changes recorded since a given date, optionally filtered to a specific model or provider. ' +
+        'Each change record includes the old price, new price, model ID, and change timestamp. ' +
+        'The since parameter accepts ISO date format (YYYY-MM-DD or full ISO timestamp, e.g. "2026-04-01"). ' +
+        'Returns an empty changes array when no changes are found in the period. ' +
+        'Use to monitor cost drift, detect newly added or deprecated models, or build price-change alerts. ' +
+        'Check total_changes in the response to distinguish empty results from errors.',
       inputSchema: {
         since: z.string().describe(
           'ISO date to check changes from, e.g. "2026-04-01"',

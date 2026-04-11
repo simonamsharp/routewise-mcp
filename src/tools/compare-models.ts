@@ -12,9 +12,13 @@ export function registerCompareModels(server: McpServer, supabase: SupabaseClien
     'compare_models',
     {
       description:
-        'Head-to-head comparison of 2-5 specific models. ' +
-        'Compare pricing, capabilities, quality tiers, and optionally ' +
-        'project costs based on expected usage volume.',
+        'Side-by-side comparison of 2–5 specific LLMs by pricing, quality tier, capabilities, and projected costs. ' +
+        'Supply model IDs (e.g. "anthropic/claude-sonnet-4", "openai/gpt-4.1"); add an optional volume object ' +
+        'to see daily and monthly cost estimates based on expected call volume and token sizes. ' +
+        'Returns models sorted by value score, with a plain-English recommendation highlighting best value, ' +
+        'cheapest, and highest-quality options. Unknown model IDs are reported in not_found without raising an error. ' +
+        'Use when you already have specific candidates and want a structured diff. ' +
+        'Do not use for open-ended model discovery — use recommend_model instead.',
       inputSchema: {
         models: z.array(z.string()).min(2).max(5).describe(
           'Model IDs to compare, e.g. ["anthropic/claude-sonnet-4", "openai/gpt-4.1"]',

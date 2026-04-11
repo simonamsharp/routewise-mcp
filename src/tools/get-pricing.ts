@@ -11,9 +11,13 @@ export function registerGetPricing(server: McpServer, supabase: SupabaseClient, 
     'get_pricing',
     {
       description:
-        'Raw pricing data lookup for LLM models. Filter by model, provider, ' +
-        'price ceiling, and capabilities. Returns structured pricing data for ' +
-        'programmatic consumption.',
+        'Returns raw pricing and capability data for LLM models matching the supplied filters. ' +
+        'Filters can be combined: specific model ID, provider name, maximum input price per million tokens, ' +
+        'required capabilities (tool_calling, json_output, streaming, vision), and minimum context window. ' +
+        'Results are ordered by value score; default limit is 20 (max 100). ' +
+        'Each result includes input/output prices per MTok, context length, max output tokens, capabilities, quality tier, and value score. ' +
+        'Use for programmatic price checks, budget validation, or building custom selection logic. ' +
+        'Does not make recommendations — use recommend_model for that.',
       inputSchema: {
         model_id: z.string().optional().describe(
           'Specific model ID, e.g. "anthropic/claude-sonnet-4"',
