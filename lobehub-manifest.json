@@ -2,7 +2,7 @@
   "$schema": "https://chat-plugins.lobehub.com/schema/lobeChatPlugin.json",
   "api": [
     {
-      "url": "https://whichmodel.dev/mcp",
+      "url": "https://mcp.whichmodel.dev/mcp",
       "name": "recommend_model",
       "description": "Get the best AI model recommendation for a specific task. Returns ranked models based on quality, speed, or cost optimization with real-time pricing data updated every 4 hours.",
       "parameters": {
@@ -28,7 +28,7 @@
       }
     },
     {
-      "url": "https://whichmodel.dev/mcp",
+      "url": "https://mcp.whichmodel.dev/mcp",
       "name": "compare_models",
       "description": "Side-by-side comparison of specific AI models across pricing, capabilities, speed, and quality metrics.",
       "parameters": {
@@ -44,7 +44,7 @@
       }
     },
     {
-      "url": "https://whichmodel.dev/mcp",
+      "url": "https://mcp.whichmodel.dev/mcp",
       "name": "get_pricing",
       "description": "Get real-time pricing for AI models across 30+ providers. Cross-verified every 4 hours against provider APIs.",
       "parameters": {
@@ -63,7 +63,7 @@
       }
     },
     {
-      "url": "https://whichmodel.dev/mcp",
+      "url": "https://mcp.whichmodel.dev/mcp",
       "name": "estimate_cost",
       "description": "Estimate the cost of an AI model call based on input/output token counts.",
       "parameters": {
@@ -86,7 +86,7 @@
       }
     },
     {
-      "url": "https://whichmodel.dev/mcp",
+      "url": "https://mcp.whichmodel.dev/mcp",
       "name": "find_cheapest_capable",
       "description": "Find the cheapest AI model that meets minimum capability requirements for a given task.",
       "parameters": {
@@ -107,7 +107,7 @@
       }
     },
     {
-      "url": "https://whichmodel.dev/mcp",
+      "url": "https://mcp.whichmodel.dev/mcp",
       "name": "check_price_changes",
       "description": "Check recent pricing changes across AI models. Useful for monitoring cost trends and catching price drops.",
       "parameters": {

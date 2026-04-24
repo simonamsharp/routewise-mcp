@@ -19,7 +19,7 @@ export interface SignupEnv {
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
   RESEND_API_KEY?: string;       // optional — email skipped when absent
-  APP_BASE_URL?: string;         // e.g. https://whichmodel.dev (for email links)
+  APP_BASE_URL?: string;         // e.g. https://mcp.whichmodel.dev (for email links)
 }
 
 const FREE_MONTHLY_LIMIT = 1_000;
@@ -132,7 +132,7 @@ export async function handleSignup(request: Request, env: SignupEnv): Promise<Re
 
   // Best-effort welcome email
   if (env.RESEND_API_KEY) {
-    const baseUrl = env.APP_BASE_URL ?? 'https://whichmodel.dev';
+    const baseUrl = env.APP_BASE_URL ?? 'https://mcp.whichmodel.dev';
     // Fire-and-forget — don't await, don't fail on error
     sendWelcomeEmail(env.RESEND_API_KEY, email, rawKey, baseUrl).catch(() => {});
   }

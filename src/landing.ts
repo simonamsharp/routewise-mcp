@@ -1,5 +1,5 @@
 /**
- * WhichModel landing page — served at whichmodel.dev root.
+ * WhichModel MCP landing page — served at mcp.whichmodel.dev root.
  *
  * Self-contained HTML/CSS/JS template literal.
  * The sign-up form posts to POST /auth/signup and displays
@@ -368,7 +368,7 @@ export const LANDING_HTML = `<!DOCTYPE html>
     <div>
       <div class="hero-code">
         <span>// Add to your agent config</span><br>
-        <span>"mcpServers":</span> { "whichmodel": { "url": "https://whichmodel.dev/mcp" } }
+        <span>"mcpServers":</span> { "whichmodel": { "url": "https://mcp.whichmodel.dev/mcp" } }
       </div>
     </div>
   </div>
@@ -492,7 +492,7 @@ export const LANDING_HTML = `<!DOCTYPE html>
       </li>
       <li>
         <div class="faq-q">Do I need an API key to start?</div>
-        <div class="faq-a">No. The free tier works immediately via IP-based rate limiting — just point your agent at https://whichmodel.dev/mcp. An API key removes IP restrictions and unlocks the usage dashboard.</div>
+        <div class="faq-a">No. The free tier works immediately via IP-based rate limiting — just point your agent at https://mcp.whichmodel.dev/mcp. An API key removes IP restrictions and unlocks the usage dashboard.</div>
       </li>
       <li>
         <div class="faq-q">What happens when I hit my monthly limit?</div>

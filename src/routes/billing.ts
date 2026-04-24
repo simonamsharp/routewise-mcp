@@ -159,7 +159,7 @@ export async function handleCreateCheckout(request: Request, env: BillingEnv): P
   }
 
   const priceId = env[planConfig.stripe_price_id_key] as string;
-  const baseUrl = env.APP_BASE_URL ?? 'https://whichmodel.dev';
+  const baseUrl = env.APP_BASE_URL ?? 'https://mcp.whichmodel.dev';
   const successUrl = body.success_url ?? `${baseUrl}/?upgraded=true`;
   const cancelUrl = body.cancel_url ?? `${baseUrl}/`;
 
@@ -371,7 +371,7 @@ export async function handleBillingPortal(request: Request, env: BillingEnv): Pr
     return Response.json({ error: 'No billing account found. Subscribe first via /billing/create-checkout.' }, { status: 404 });
   }
 
-  const baseUrl = env.APP_BASE_URL ?? 'https://whichmodel.dev';
+  const baseUrl = env.APP_BASE_URL ?? 'https://mcp.whichmodel.dev';
   const returnUrl = new URL(request.url).searchParams.get('return_url') ?? baseUrl;
 
   const res = await stripePost(env.STRIPE_SECRET_KEY, '/billing_portal/sessions', {

@@ -20,7 +20,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 const REMOTE_URL =
-  process.env['WHICHMODEL_URL'] ?? 'https://whichmodel-mcp.simonamsharp.workers.dev/mcp';
+  process.env['WHICHMODEL_URL'] ?? 'https://mcp.whichmodel.dev/mcp';
 
 async function main(): Promise<void> {
   // Connect to the remote WhichModel server

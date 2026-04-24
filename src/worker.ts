@@ -24,6 +24,7 @@ import { ToolTracker } from './observability.js';
 import { renderDashboardHTML, renderDashboardLoginHTML } from './dashboard.js';
 import { handleTelegramWebhook } from './telegram/webhook.js';
 import { notifyPriceChanges, notifyNewModels, notifyDeprecations } from './telegram/notifications.js';
+import { pollAndPush } from './telegram/poller.js';
 import { getPriceChangesSince } from './db/price-history.js';
 
 export interface Env {
@@ -46,6 +47,10 @@ export interface Env {
   // Telegram bot
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_WEBHOOK_SECRET?: string;
+  // Paperclip integration (bidirectional Telegram ↔ agent messaging)
+  PAPERCLIP_API_URL?: string;
+  PAPERCLIP_API_KEY?: string;
+  PAPERCLIP_COMPANY_ID?: string;
   // Dashboard auth (shared secret — protects /dashboard and /observability/*)
   DASHBOARD_SECRET?: string;
 }
@@ -125,6 +130,19 @@ export default {
     const supabase = createServiceSupabaseClient(env);
     const isFullPipeline = event.cron === '0 */4 * * *';
     const isSmokeTest = event.cron === '0 */12 * * *';
+    const isTelegramPoll = event.cron === '* * * * *';
+
+    // ── Telegram → Paperclip poll (every minute) ──
+    if (isTelegramPoll) {
+      if (env.TELEGRAM_BOT_TOKEN && env.PAPERCLIP_API_URL && env.PAPERCLIP_API_KEY && env.PAPERCLIP_COMPANY_ID) {
+        await pollAndPush(supabase, env.TELEGRAM_BOT_TOKEN, {
+          PAPERCLIP_API_URL: env.PAPERCLIP_API_URL,
+          PAPERCLIP_API_KEY: env.PAPERCLIP_API_KEY,
+          PAPERCLIP_COMPANY_ID: env.PAPERCLIP_COMPANY_ID,
+        }).catch((err) => console.error('Telegram poll error:', err));
+      }
+      return;
+    }
 
     if (isFullPipeline) {
       const result = await runPricingPipeline(supabase);
@@ -422,10 +440,13 @@ export default {
         );
       }
       const supabase = createServiceSupabaseClient(env);
+      const paperclipEnv = env.PAPERCLIP_API_URL && env.PAPERCLIP_API_KEY && env.PAPERCLIP_COMPANY_ID
+        ? { PAPERCLIP_API_URL: env.PAPERCLIP_API_URL, PAPERCLIP_API_KEY: env.PAPERCLIP_API_KEY, PAPERCLIP_COMPANY_ID: env.PAPERCLIP_COMPANY_ID }
+        : undefined;
       return handleTelegramWebhook(request, supabase, {
         TELEGRAM_BOT_TOKEN: env.TELEGRAM_BOT_TOKEN,
         TELEGRAM_WEBHOOK_SECRET: env.TELEGRAM_WEBHOOK_SECRET,
-      });
+      }, paperclipEnv);
     }
 
     // ── MCP endpoint ──

@@ -15,6 +15,9 @@ compatibility_flags = ["nodejs_compat"]
 #   wrangler secret put APP_BASE_URL             (optional — defaults to https://whichmodel.dev)
 #   wrangler secret put TELEGRAM_BOT_TOKEN       (optional — Telegram bot integration)
 #   wrangler secret put TELEGRAM_WEBHOOK_SECRET  (optional — validates Telegram webhook calls)
+#   wrangler secret put PAPERCLIP_API_URL        (optional — bidirectional Telegram ↔ agent messaging)
+#   wrangler secret put PAPERCLIP_API_KEY        (optional — Paperclip service API key)
+#   wrangler secret put PAPERCLIP_COMPANY_ID     (optional — Paperclip company ID)
 #   wrangler secret put DASHBOARD_SECRET         (optional — protects /dashboard and /observability/* endpoints)
 
 # KV namespace for API key cache (sha256(key) → {key_id, plan, monthly_limit, revoked}, 5-min TTL)
@@ -39,7 +42,7 @@ binding = "TOOL_METRICS"
 id = "219ee1f8fe6348a197387d9ef2b0cd2f"
 
 [triggers]
-crons = ["0 */4 * * *", "30 1-3,5-7,9-11,13-15,17-19,21-23 * * *", "0 */12 * * *"]  # full pipeline every 4h at :00; new-model scan at :30 on non-full-pipeline hours; capability smoke tests every 12h
+crons = ["* * * * *", "0 */4 * * *", "30 1-3,5-7,9-11,13-15,17-19,21-23 * * *", "0 */12 * * *"]  # Telegram poll every minute; full pipeline every 4h at :00; new-model scan at :30 on non-full-pipeline hours; capability smoke tests every 12h
 
 [observability]
 enabled = true
