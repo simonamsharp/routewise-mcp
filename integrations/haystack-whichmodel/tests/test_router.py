@@ -10,7 +10,7 @@ from haystack_integrations.components.routers.whichmodel import WhichModelRouter
 class TestWhichModelRouterInit:
     def test_default_init(self):
         router = WhichModelRouter()
-        assert router.mcp_endpoint == "https://whichmodel.dev/mcp"
+        assert router.mcp_endpoint == "https://mcp.whichmodel.app/mcp"
         assert router.timeout == 30.0
         assert router.default_task_type is None
         assert router.default_complexity == "medium"

@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 keywords = ["haystack", "whichmodel", "llm", "model-selection", "cost-optimization", "mcp"]
 authors = [
-    {name = "WhichModel", email = "hello@whichmodel.dev"},
+    {name = "WhichModel", email = "hello@whichmodel.app"},
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -40,7 +40,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://whichmodel.dev"
+Homepage = "https://whichmodel.app"
 Repository = "https://github.com/Which-Model/whichmodel-mcp"
 Documentation = "https://github.com/Which-Model/whichmodel-mcp/tree/main/integrations/haystack-whichmodel"
 

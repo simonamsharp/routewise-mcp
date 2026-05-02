@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/whichmodel-haystack)](https://pypi.org/project/whichmodel-haystack/)
 [![Python](https://img.shields.io/pypi/pyversions/whichmodel-haystack)](https://pypi.org/project/whichmodel-haystack/)
 
-Haystack integration for [WhichModel](https://whichmodel.dev) — cost-aware LLM model selection for your pipelines.
+Haystack integration for [WhichModel](https://whichmodel.app) — cost-aware LLM model selection for your pipelines.
 
 ## Installation
 
@@ -24,7 +24,7 @@ print(result["provider"])       # e.g. "anthropic"
 print(result["confidence"])     # "high", "medium", or "low"
 ```
 
-No API key required. The component calls the public WhichModel MCP server at `https://whichmodel.dev/mcp`.
+No API key required. The component calls the public WhichModel MCP server at `https://mcp.whichmodel.app/mcp`.
 
 ## Usage in a Pipeline
 
@@ -57,7 +57,7 @@ print(f"Estimated cost: ${result['recommendation']['cost_estimate_usd']:.6f}")
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `mcp_endpoint` | `str` | `https://whichmodel.dev/mcp` | WhichModel MCP server URL |
+| `mcp_endpoint` | `str` | `https://mcp.whichmodel.app/mcp` | WhichModel MCP server URL |
 | `timeout` | `float` | `30.0` | HTTP request timeout in seconds |
 | `default_task_type` | `str` | `None` | Default task type for `run()` |
 | `default_complexity` | `str` | `"medium"` | Default complexity level |

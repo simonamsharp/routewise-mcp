@@ -49,7 +49,7 @@ TaskType = Literal[
 
 Complexity = Literal["low", "medium", "high"]
 
-_MCP_ENDPOINT = "https://whichmodel.dev/mcp"
+_MCP_ENDPOINT = "https://mcp.whichmodel.app/mcp"
 _REQUEST_ID_COUNTER = 0
 
 
