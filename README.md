@@ -163,3 +163,4 @@ Pricing data is refreshed every 4 hours from OpenRouter. Each response includes 
 - **Website:** [whichmodel.dev](https://whichmodel.dev)
 - **MCP endpoint:** [https://whichmodel.dev/mcp](https://whichmodel.dev/mcp)
 - **Discovery:** [https://whichmodel.dev/.well-known/mcp.json](https://whichmodel.dev/.well-known/mcp.json)
+- **nAIm registry:** [naim.janis7ewski.org](https://naim.janis7ewski.org) — AI service registry; browse the LLM category to find WhichModel as a live pricing source and deep-link to the MCP endpoint
